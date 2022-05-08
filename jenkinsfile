@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    options { disableConcurrentBuilds() }
+    triggers { githubPush() }
+    stages {
+        stage('Docker Build & Push into Non-Prod environment') {
+            when {
+                expression { return env.GIT_BRANCH == 'origin/development'; }
+            }
+            steps {
+                script {
+                    docker.withRegistry('https://registry.cirrus.ibm.com', 'cirrus') {
+                        def app = docker.build("registry.cirrus.ibm.com/nps-demo-test/test-angel2:${env.GIT_COMMIT}", ".")
+                        app.push()
+                    }
+                }
+            }
+        }
+        stage('Docker Build & Push into Prod environment') {
+            when {
+                expression { return env.GIT_BRANCH == 'origin/master'; }
+            }
+            steps {
+                script { echo 'this is a test of when condition for prod environment' }
+            }
+        }
+    }
+}

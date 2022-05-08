@@ -1,0 +1,35 @@
+# This is a basic workflow that is manually triggered
+
+name: Publish Docker
+
+on:
+  push:
+    branches: [ development ]
+  pull_request:
+    branches: [ development ]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - 
+        name: Checkout
+        uses: actions/checkout@v2
+      - 
+        name: Setup and Build
+        id: build_image
+        uses: redhat-actions/s2i-build@v2
+        with:
+          path_context: '.'
+          builder_image: 'registry.cirrus.ibm.com/nps-demo-test/test-angel2'
+          image: registry.cirrus.ibm.com/nps-demo-test/test-angel2
+          tags: v1 ${{ github.sha }}
+      - 
+        name: Push To Quay Action
+        uses: redhat-actions/push-to-registry@v2
+        with:
+          image: ${{ steps.build_image.outputs.image }}
+          tags: ${{ steps.build_image.outputs.tags }}
+          registry: registry.cirrus.ibm.com
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
