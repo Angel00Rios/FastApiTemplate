@@ -1,4 +1,4 @@
-FROM registry.cirrus.ibm.com/ubi8/python-38
+FROM python:3.8
 
 # Change to root for the following tasks.
 USER root
